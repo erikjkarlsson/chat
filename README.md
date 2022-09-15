@@ -19,7 +19,7 @@ chat.py
  
  # How To Use and install
  
-  1. Create a database with sqlite3 and store the name in `DB_PATH`, the default value of `DB_PATH` is `./data/chat.db`, you can use the provided script to create the database if you are on a UNIX system. First `chmod +x create_database.sh` then ./create_database.sh`
+  1. Create a database with sqlite3 and store the name in `DB_PATH`, the default value of `DB_PATH` is `./data/chat.db`, you can use the provided script to create the database if you are on a UNIX system. First `chmod +x create_database.sh` then `./create_database.sh`
   
   ```sh
   mkdir data
