@@ -15,12 +15,13 @@
 #  create_database( path )                                               
 #  clear_database( path  str )                                          
 #  send_message( path, message, author=..., time=...)
-#  message_occurences( path, message, id_bounds )
+#  message_occurences(path, message, id_bounds):
 #  recive_messages( path )
 #  lookup_message(path, message_id)
 #  message_count(path)
 #  previous_message_id( path )
-#  refresh_database( path )                                              
+#  refresh_database( path )
+#  show_chat( path = ... )
 #  remove_message( path, message_id=..., author = ... )
 #  prettify( messages )
 #  edit_message( path, message_id, message=..., author=..., time=... )
@@ -45,7 +46,7 @@
 # for the chat, leaving a blank database.
 #
 
-#import hashlib
+import hashlib
 import sqlite3
 from time    import localtime
 from os.path import isfile
@@ -102,13 +103,14 @@ def prettify(messages):
     for m in messages:
         print(m.str(), end='\n\n')
         
+def show_chat(path = DB_PATH):
+    prettify(recive_messages(path))
 
 def timestring():
     """Get the current time as a string"""
     
-    t = time.localtime()
+    t = localtime()
     return f'{t.tm_year}/{t.tm_mon}/{t.tm_mday} {t.tm_hour}:{t.tm_min}:{t.tm_sec}'
-
 
 def create_database(path):
     """Create all tables for the chat database"""
@@ -120,12 +122,12 @@ def create_database(path):
         cur.execute("BEGIN")        
 
         cur.execute("""
-CREATE TABLE IF NOT EXISTS chat (
+        CREATE TABLE IF NOT EXISTS chat (
        id INTEGER PRIMARY KEY AUTOINCREMENT,
        author  TEXT,
        message TEXT,
        time    TEXT
-);
+        );
         """)
         
         con.commit()
@@ -133,14 +135,13 @@ CREATE TABLE IF NOT EXISTS chat (
         cur.execute("BEGIN")
         
         cur.execute("""
-CREATE INDEX IF NOT EXISTS chat_index ON chat(id);
-    """)        
+        CREATE INDEX IF NOT EXISTS chat_index ON chat(id);
+        """)        
         con.commit()
 
         con.close()        
     except:
         BaseException("Unable to create database")
-
         
 def clear_database(path : str):
     """Remove all tables related to the chat.
@@ -161,7 +162,6 @@ def clear_database(path : str):
     except:
         
         BaseException("Unable to clear database")
-        
         
 def send_message(path, message, author="Anonymous", mtime=timestring()):
     """ Send a message in the chat and return the message id
@@ -211,6 +211,8 @@ def message_count(path):
         cnt = res.fetchall()[0][0]
         con.close()
 
+        if cnt == None: cnt = 0
+        
         return cnt
     except:
         BaseException("problem fetching messages")
@@ -236,32 +238,6 @@ def message_occurences(path, message, id_bounds):
         con.close()
 
         return cnt
-    except:
-        BaseException("problem fetching messages")
-
-        
-    
-def lookup_message(path, message_id):
-    """ Return a structure containing all messages in the chat.
-
-    path: the path to the chat database
-    """
-    
-    try:
-        con = sqlite3.connect(path)
-        cur = con.cursor() 
-        res = cur.execute(f'SELECT * FROM chat WHERE id = ?', (message_id,))
-    
-        msg = None
-
-        # id is defined as unique, hence only one message
-        # i use this to bind result into m quick
-        for m in res.fetchall():
-            msg = Message(m[0], m[1], m[2], m[3])
-            
-        con.close()
-
-        return msg
     except:
         BaseException("problem fetching messages")
 
@@ -302,12 +278,33 @@ def previous_message_id(path):
     
         previous_id = res.fetchall()[0][0]
 
+        if previous_id == None: previous_id = 0
         con.close()
 
         return previous_id
     except:
         BaseException("problem fetching messages")
 
+def recive_messages(path):
+    """ Return a structure containing all messages in the chat.
+    path: the path to the chat database
+    """
+    
+    try:
+        con = sqlite3.connect(path)
+        cur = con.cursor() 
+        res = cur.execute(f'SELECT * FROM chat')
+    
+        messages = []
+
+        for m in res.fetchall():
+            messages.append(Message(m[0], m[1], m[2], m[3]))
+            
+        con.close()
+
+        return messages    
+    except:
+        BaseException("problem fetching messages")
         
 def refresh_database(path):
     """ Free up pages and align table data to be contiguous
@@ -325,7 +322,6 @@ def refresh_database(path):
         
     finally:
         con.close()
-    
     
 def remove_message(path, message_id = 0, author = None):
     """ Remove a message from the chat by id or author
