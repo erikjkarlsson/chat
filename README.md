@@ -13,6 +13,7 @@ chat.py
  - `recive_messages( path ) -> list(Message)`
  - `lookup_message( path, message_id ) -> Message`
  - `message_count( path  ) -> int`
+ - `message_occurences( path, message, bounds_id ) -> int`
  - `previous_message_id( path ) -> int`
  - `refresh_database( path )`                                             
  - `remove_message( path, message_id=..., author = ... )`                 
