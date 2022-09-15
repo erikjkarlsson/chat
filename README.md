@@ -6,14 +6,14 @@ chat.py
   
 # Defines
  - `prettify( messages )`
- - `timestring(  )`                                                        
+ - `timestring(  ) -> str`                                                        
  - `create_database( path )`                                               
  - `clear_database( path  str )`                                          
- - `send_message( path, message, author=..., time=...)`  
- - `recive_messages( path )`
- - `lookup_message( path, message_id )`
- - `message_count( path  )`
- - `prettify( messages )`
+ - `send_message( path, message, author=..., time=...) -> int`  
+ - `recive_messages( path ) -> list(Message)`
+ - `lookup_message( path, message_id ) -> Message`
+ - `message_count( path  ) -> int`
+ - `previous_message_id( path ) -> int`
  - `refresh_database( path )`                                             
  - `remove_message( path, message_id=..., author = ... )`                 
  - `edit_message( path, message_id, message=..., author=..., time=... )`
