@@ -1,3 +1,5 @@
+![image]{./image.png}
+
 chat.py
 =======
   A tiny sqlite3 based chat, where you can post, delete, edit and read messages.
