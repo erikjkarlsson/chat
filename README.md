@@ -1,4 +1,5 @@
 ![image](./image.png)
+![caption](website created by webchat.py)
 
 chat.py
 =======
@@ -87,3 +88,45 @@ CREATE TABLE chat (
 
 CREATE INDEX chat_index ON chat(id);
 ```
+
+
+webchat.py
+==========
+
+Defines a layer above `chat.py` in the form of a `Flask` server. The server
+will create a website on `http://172.0.0.1:5000`. The chat is available on 
+`http://172.0.0.1:5000/chat`. The website is a chat connected to `chat.py`. 
+You are able to post messages, aswell as delete any message (by clicking the 
+red X).
+
+# Defines
+
+- `escape(s)`
+- `chat()`
+- `dele(msg_id)`
+- `post()`
+
+# How to use
+
+Start the server by running the `webchat.py` file `python webchat.py`. For it to function
+a database needs to exist, and ìnitialized with `chat.py` (by running `create_database(DB_PATH)`).
+
+## Spam Filter 
+
+There is a simple "spam" filter present which disallows more then four identical "messages" (refering
+to the column in the database named message) to be posted in the last seven messages. This will, upon
+posting a "spam" message display that your message is spam, and not post the message. This has obvious 
+flaws, and only acts as a demonstration.
+
+# Functions
+
+- `escape(s)` is intended to clear the string `s` of containging any injected code. At the
+moment it is not implemented.
+
+- `chat()` this is the main router function, which handles all GET requests for the `/chat` page 
+- 
+- `dele(msg_id)` this function handles all urls which delete a message. All urls `/del/<message_id>`.
+will delete the message corresponding to the id.
+
+- `post()` handles all POST requests for the `/chat` page, which is called from the form on the page,
+and will create a message from the filled in information. 
