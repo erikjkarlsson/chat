@@ -14,7 +14,8 @@
 #  timestring(  )                                                        
 #  create_database( path )                                               
 #  clear_database( path  str )                                          
-#  send_message( path, message, author=..., time=...)  
+#  send_message( path, message, author=..., time=...)
+#  message_occurences( path, message, id_bounds )
 #  recive_messages( path )
 #  lookup_message(path, message_id)
 #  message_count(path)
@@ -213,7 +214,32 @@ def message_count(path):
         return cnt
     except:
         BaseException("problem fetching messages")
+
+def message_occurences(path, message, id_bounds):
+    """ Return the amount of messages after a set id which have a message,
+    useful for spam.
+
+    path: the path to the chat database
+    message: the message to be matched
+    id_bounds: the id which the counting starts after 
+    """
     
+    try:
+        con = sqlite3.connect(path)
+        cur = con.cursor() 
+        res = cur.execute(f'SELECT COUNT(*) FROM chat WHERE message = ? and id > ?',
+                          (message, id_bounds))
+
+        # id is defined as unique, hence only one message
+        # i use this to bind result into m quick
+        cnt = res.fetchall()[0][0]
+        con.close()
+
+        return cnt
+    except:
+        BaseException("problem fetching messages")
+
+        
     
 def lookup_message(path, message_id):
     """ Return a structure containing all messages in the chat.
