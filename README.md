@@ -11,7 +11,9 @@ chat.py
  - `clear_database( path  str )`                                          
  - `send_message( path, message, author=..., time=...)`  
  - `recive_messages( path )`
- - `recive_message(path, message_id)`
+ - `lookup_message( path, message_id )`
+ - `message_count( path  )`
+ - `prettify( messages )`
  - `refresh_database( path )`                                             
  - `remove_message( path, message_id=..., author = ... )`                 
  - `edit_message( path, message_id, message=..., author=..., time=... )`
