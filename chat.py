@@ -18,6 +18,7 @@
 #  recive_messages( path )
 #  lookup_message(path, message_id)
 #  message_count(path)
+#  previous_message_id( path )
 #  refresh_database( path )                                              
 #  remove_message( path, message_id=..., author = ... )
 #  prettify( messages )
@@ -262,7 +263,7 @@ def lookup_message(path, message_id):
     except:
         BaseException("problem fetching messages")
         
-def previous_message(path):
+def previous_message_id(path):
     """ Return the previous message
 
     path: the path to the chat database
