@@ -1,4 +1,4 @@
-![image]{./image.png}
+![image](./image.png)
 
 chat.py
 =======
