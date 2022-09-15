@@ -16,9 +16,11 @@
 #  clear_database( path  str )                                          
 #  send_message( path, message, author=..., time=...)  
 #  recive_messages( path )
-#  recive_message(path, message_id)
+#  lookup_message(path, message_id)
+#  message_count(path)
 #  refresh_database( path )                                              
-#  remove_message( path, message_id=..., author = ... )                 
+#  remove_message( path, message_id=..., author = ... )
+#  prettify( messages )
 #  edit_message( path, message_id, message=..., author=..., time=... )
 #
 #  How To Use
@@ -60,13 +62,40 @@ class Message:
         s_id = f'Id.{self.id}'
         return f'{s_id} `{self.author}` at {self.time}\n>{self.message}'
 
+    
+    def sync(self):
+        "Sync with database as the message may have been edited"
+        
+        m = lookup_message(DB_PATH, self.id)
+        self.author  = m.author
+        self.time    = m.time
+        self.message = m.message
+        
     def send(self):
-        send_message(DB_PATH, self.message, self.author, self.time)
+        "Create a new message in the database"
 
+        # NOTE  
+        # This will create a new message with all of
+        # the same variable values and update the
+        # id to match the message. In turn this 
+        # updates what the message is representing,
+        # now being a new message. Usage of this
+        # should be CAREFULLY performed.
+        
+        self.id = send_message(DB_PATH, self.message,
+                               self.author, self.time)
+        
+#    def __del__(self):
+#        "Delete the object and representing message in database"
+#        
+#        remove_message(DB_PATH, self.id)
         
 
 def prettify(messages):
-    """Prettify the output recived with recive_messages()"""
+    """Prettify the output recived with recive_messages()
+
+    messages: A list of Messages
+    """
 
     for m in messages:
         print(m.str(), end='\n\n')
@@ -74,12 +103,14 @@ def prettify(messages):
 
 def timestring():
     """Get the current time as a string"""
+    
     t = time.localtime()
     return f'{t.tm_year}/{t.tm_mon}/{t.tm_mday} {t.tm_hour}:{t.tm_min}:{t.tm_sec}'
 
 
 def create_database(path):
     """Create all tables for the chat database"""
+    
     try:
         con = sqlite3.connect(path)
         cur = con.cursor()
@@ -91,7 +122,7 @@ CREATE TABLE IF NOT EXISTS chat (
        id INTEGER PRIMARY KEY AUTOINCREMENT,
        author  TEXT,
        message TEXT,
-       time    INTEGER
+       time    TEXT
 );
         """)
         
@@ -131,7 +162,7 @@ def clear_database(path : str):
         
         
 def send_message(path, message, author="Anonymous", mtime=timestring()):
-    """ Send a message in the chat.
+    """ Send a message in the chat and return the message id
 
     path: path to the chat database
     message: the text in the message
@@ -143,11 +174,21 @@ def send_message(path, message, author="Anonymous", mtime=timestring()):
         cur = con.cursor() 
 
         cur.execute("BEGIN")
+
         cur.execute(f'INSERT INTO chat (author, message, time) VALUES (?, ?, ?)',
                     (author, message, mtime,))
-    
+
+        cur.execute(f'SELECT MAX(chat.id) FROM chat')
+
+        # This does NOT cause any race conditions since
+        # it is in one transaction, hence concurrent
+
         con.commit()
+
+        last_id = cur.fetchall()[0][0]
+
         con.close()
+        return last_id
 
     except:        
         BaseException("problem sending message")
@@ -196,8 +237,8 @@ def lookup_message(path, message_id):
         return msg
     except:
         BaseException("problem fetching messages")
-        
-def recive_messages(path):
+
+def lookup_message(path, message_id):
     """ Return a structure containing all messages in the chat.
 
     path: the path to the chat database
@@ -206,16 +247,37 @@ def recive_messages(path):
     try:
         con = sqlite3.connect(path)
         cur = con.cursor() 
-        res = cur.execute(f'SELECT * FROM chat')
+        res = cur.execute(f'SELECT * FROM chat WHERE id = ?', (message_id,))
     
-        messages = []
+        msg = None
 
+        # id is defined as unique, hence only one message
+        # i use this to bind result into m quick
         for m in res.fetchall():
-            messages.append(Message(m[0], m[1], m[2], m[3]))
+            msg = Message(m[0], m[1], m[2], m[3])
             
         con.close()
 
-        return messages    
+        return msg
+    except:
+        BaseException("problem fetching messages")
+        
+def previous_message(path):
+    """ Return the previous message
+
+    path: the path to the chat database
+    """
+    
+    try:
+        con = sqlite3.connect(path)
+        cur = con.cursor() 
+        res = cur.execute(f'SELECT MAX(chat.id) FROM chat')
+    
+        previous_id = res.fetchall()[0][0]
+
+        con.close()
+
+        return previous_id
     except:
         BaseException("problem fetching messages")
 
