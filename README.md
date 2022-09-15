@@ -1,4 +1,6 @@
 ![image](./image.png)
+
+
 (image) website created by webchat.py
 
 chat.py
@@ -124,7 +126,7 @@ flaws, and only acts as a demonstration.
 moment it is not implemented.
 
 - `chat()` this is the main router function, which handles all GET requests for the `/chat` page 
-- 
+
 - `dele(msg_id)` this function handles all urls which delete a message. All urls `/del/<message_id>`.
 will delete the message corresponding to the id.
 
